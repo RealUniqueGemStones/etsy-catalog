@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Etsy Catalog</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    header {
+      background: #222;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .image-gallery {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      overflow: hidden;
+    }
+    .image-gallery img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: none;
+    }
+    .image-gallery img:first-child {
+      display: block;
+    }
+    .info {
+      padding: 15px;
+    }
+    .title {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .price {
+      color: #e67e22;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    .desc {
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 10px;
+    }
+    .tags {
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+<header>My Etsy Product Catalog</header>
+
+<div id="catalog" class="container"></div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    Papa.parse("listings.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const data = results.data;
+        const container = document.getElementById("catalog");
+
+        data.forEach((item) => {
+          if (!item.TITLE) return;
+
+          // Collect all image columns (IMAGE1...IMAGE10)
+          let images = [];
+          for (let i = 1; i <= 10; i++) {
+            const img = item["IMAGE" + i];
+            if (img && img.trim() !== "") images.push(img.trim());
+          }
+
+          const card = document.createElement("div");
+          card.className = "card";
+
+          // Image Gallery
+          const gallery = document.createElement("div");
+          gallery.className = "image-gallery";
+          images.forEach((img) => {
+            const image = document.createElement("img");
+            image.src = img;
+            gallery.appendChild(image);
+          });
+
+          // Auto image rotation
+          if (images.length > 1) {
+            let current = 0;
+            setInterval(() => {
+              const imgs = gallery.querySelectorAll("img");
+              imgs.forEach((im, i) => im.style.display = (i === current) ? "block" : "none");
+              current = (current + 1) % imgs.length;
+            }, 2500);
+          }
+
+          // Info section
+          const info = document.createElement("div");
+          info.className = "info";
+
+          info.innerHTML = `
+            <div class="title">${item.TITLE}</div>
+            <div class="price">${item.CURRENCY || '$'}${item.PRICE || ''}</div>
+            <div class="desc">${item.DESCRIPTION ? item.DESCRIPTION.substring(0, 120) + '...' : ''}</div>
+            <div class="tags">Tags: ${item.TAGS || ''}</div>
+            <div class="tags">Material: ${item.MATERIAL || ''}</div>
+            <div class="tags">Quantity: ${item.QUANTITY || ''}</div>
+          `;
+
+          card.appendChild(gallery);
+          card.appendChild(info);
+          container.appendChild(card);
+        });
+      },
+    });
+  });
+</script>
+
+</body>
+</html>
