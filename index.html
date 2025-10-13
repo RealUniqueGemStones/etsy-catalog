@@ -1,201 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Etsy Catalog</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My Etsy Catalog (CSV)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f7f7f7;
-    margin: 0;
-    padding: 20px;
-  }
-  .catalog {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
-  }
-  .product {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-    cursor: pointer;
-  }
-  .product:hover {
-    transform: scale(1.03);
-  }
-  .product img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-  .product-info {
-    padding: 10px;
-  }
-  .product-title {
-    font-weight: bold;
-    font-size: 16px;
-  }
-  .product-price {
-    color: #007BFF;
-    margin-top: 5px;
-  }
-
-  /* MODAL */
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  .modal-content {
-    background: white;
-    display: flex;
-    flex-wrap: wrap;
-    width: 80%;
-    max-width: 900px;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-  }
-  .modal-left {
-    flex: 1 1 60%;
-    background: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .modal-left img {
-    width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    cursor: pointer;
-  }
-  .modal-right {
-    flex: 1 1 40%;
-    padding: 20px;
-  }
-  .modal-right h2 {
-    margin: 0;
-    font-size: 22px;
-  }
-  .modal-right p {
-    font-size: 18px;
-    margin: 10px 0;
-  }
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: crimson;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 8px;
-    cursor: pointer;
-    font-size: 16px;
-  }
+  body { font-family: Arial, sans-serif; margin:0; background:#f4f6f8; color:#222; }
+  header{ background:#0b74de;color:#fff;padding:14px 18px;font-size:20px;font-weight:700;}
+  .wrap{max-width:1100px;margin:18px auto;padding:12px;}
+  .catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 6px 18px rgba(10,10,20,0.06);cursor:pointer}
+  .thumb{height:180px;background:#eee;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .meta{padding:10px}
+  .title{font-weight:700;margin-bottom:6px}
+  .price{color:#0b74de;font-weight:700}
+  /* Modal */
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-box{background:#fff;width:95%;max-width:1100px;border-radius:10px;overflow:hidden;display:flex;box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+  .modal-left{flex:1 1 60%;background:#111;display:flex;align-items:center;justify-content:center;min-height:360px}
+  .modal-left img{max-width:100%;max-height:80vh;object-fit:contain;cursor:pointer}
+  .modal-right{flex:1 1 40%;padding:22px}
+  .modal-right h2{margin:0 0 10px 0;font-size:22px}
+  .modal-right .price{font-size:20px;margin-bottom:8px}
+  .modal-right .qty,.modal-right .tags,.modal-right .material{color:#444;margin-bottom:8px}
+  .close-btn{position:absolute;right:32px;top:20px;background:#e74c3c;color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+  @media(max-width:800px){ .modal-box{flex-direction:column} .modal-left{order:2} .modal-right{order:1}}
+  .placeholder{color:#888;font-size:14px;padding:12px}
 </style>
 </head>
 <body>
+  <header>My Etsy Catalog</header>
+  <div class="wrap">
+    <div id="catalog" class="catalog"></div>
+    <div id="noitems" class="placeholder" style="display:none;">No products found (check listings.csv).</div>
+  </div>
 
-<h1>My Etsy Catalog</h1>
-<div class="catalog" id="catalog"></div>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <button class="close-btn" id="closeBtn">X</button>
-    <div class="modal-left">
-      <img id="modalImage" src="" alt="Product Image">
-    </div>
-    <div class="modal-right">
-      <h2 id="modalTitle"></h2>
-      <p id="modalPrice"></p>
-      <p id="modalQuantity"></p>
+  <!-- Modal -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-box">
+      <div style="position:relative;flex:1">
+        <button id="closeModal" class="close-btn" title="Close">X</button>
+        <div class="modal-left" id="modalLeft">
+          <img id="modalImage" src="" alt="Product Image">
+        </div>
+      </div>
+      <div class="modal-right">
+        <h2 id="modalTitle">Product Title</h2>
+        <div id="modalPrice" class="price"></div>
+        <div id="modalQuantity" class="qty"></div>
+        <div id="modalTags" class="tags"></div>
+        <div id="modalMaterial" class="material"></div>
+        <div id="modalDesc" style="margin-top:12px;color:#333;font-size:14px"></div>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-const products = [
-  {
-    TITLE: "Natural Emerald Ring",
-    PRICE: "$250",
-    QUANTITY: "3",
-    IMAGES: [
-      "https://via.placeholder.com/400x400?text=Emerald+1",
-      "https://via.placeholder.com/400x400?text=Emerald+2",
-      "https://via.placeholder.com/400x400?text=Emerald+3"
-    ]
-  },
-  {
-    TITLE: "Ruby Necklace",
-    PRICE: "$180",
-    QUANTITY: "5",
-    IMAGES: [
-      "https://via.placeholder.com/400x400?text=Ruby+1",
-      "https://via.placeholder.com/400x400?text=Ruby+2",
-      "https://via.placeholder.com/400x400?text=Ruby+3"
-    ]
+/*
+CSV-to-modal catalog
+Works with headers: TITLE, DESCRIPTION, PRICE, CURRENCY, QUANTITY, TAGS, MATERIAL, IMAGE1..IMAGE10
+Also tolerant to header case differences and extra image columns whose name contains "image".
+*/
+
+const CSV_PATH = 'listings.csv';
+const PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23f0f0f0"/><text x="50%" y="50%" font-size="24" text-anchor="middle" fill="%23999" dy=".3em">No Image</text></svg>';
+
+const catalogEl = document.getElementById('catalog');
+const noitemsEl = document.getElementById('noitems');
+
+let PRODUCTS = []; // will contain parsed items
+
+function getField(row, names) {
+  // case-insensitive: check multiple alternatives
+  for (let n of names) {
+    // direct key match
+    for (const k in row) {
+      if (k.trim().toLowerCase() === n.trim().toLowerCase()) return row[k];
+    }
   }
-];
-
-const catalog = document.getElementById("catalog");
-products.forEach((p, index) => {
-  const div = document.createElement("div");
-  div.className = "product";
-  div.innerHTML = `
-    <img src="${p.IMAGES[0]}" alt="${p.TITLE}">
-    <div class="product-info">
-      <div class="product-title">${p.TITLE}</div>
-      <div class="product-price">${p.PRICE}</div>
-    </div>
-  `;
-  div.onclick = () => openModal(index);
-  catalog.appendChild(div);
-});
-
-const modal = document.getElementById("modal");
-const modalImg = document.getElementById("modalImage");
-const modalTitle = document.getElementById("modalTitle");
-const modalPrice = document.getElementById("modalPrice");
-const modalQuantity = document.getElementById("modalQuantity");
-const closeBtn = document.getElementById("closeBtn");
-
-let currentImages = [];
-let imgIndex = 0;
-
-function openModal(index) {
-  const p = products[index];
-  modal.style.display = "flex";
-  modalTitle.textContent = p.TITLE;
-  modalPrice.textContent = "Price: " + p.PRICE;
-  modalQuantity.textContent = "Quantity: " + p.QUANTITY;
-  currentImages = p.IMAGES;
-  imgIndex = 0;
-  modalImg.src = currentImages[imgIndex];
+  return undefined;
 }
 
-modalImg.onclick = function() {
-  imgIndex = (imgIndex + 1) % currentImages.length;
-  modalImg.src = currentImages[imgIndex];
-};
+function collectImages(row) {
+  const images = [];
+  // First check columns IMAGE1..IMAGE10
+  for (let i=1;i<=10;i++){
+    const key = 'IMAGE' + i;
+    const val = getField(row, [key, key.toLowerCase(), key.toUpperCase()]);
+    if (val && val.toString().trim() !== '') {
+      images.push(val.toString().trim());
+    }
+  }
+  // Also pick ANY column whose header contains 'image' (robust)
+  for (const k in row) {
+    if (k && k.toLowerCase().includes('image')) {
+      const v = row[k];
+      if (v && v.toString().trim() !== '' && images.indexOf(v.toString().trim()) === -1) {
+        images.push(v.toString().trim());
+      }
+    }
+  }
+  return images;
+}
 
-closeBtn.onclick = function() {
-  modal.style.display = "none";
-};
+function normalizeRow(row) {
+  // build object with our keys
+  const title = getField(row, ['TITLE','Title','title']) || '';
+  const desc = getField(row, ['DESCRIPTION','Description','description','BODY_HTML','body_html']) || '';
+  const priceVal = getField(row, ['PRICE','Price','price','USD price','price (usd)']) || '';
+  const currency = getField(row, ['CURRENCY','Currency','currency']) || '';
+  const price = (currency ? (currency + ' ' + priceVal) : (priceVal || ''));
+  const qty = getField(row, ['QUANTITY','Quantity','quantity','QTY','Qty']) || '';
+  const tags = getField(row, ['TAGS','Tags','tags']) || '';
+  const material = getField(row, ['MATERIAL','Material','material']) || '';
 
-window.onclick = function(e) {
-  if (e.target === modal) modal.style.display = "none";
-};
+  const images = collectImages(row);
+
+  return {
+    title: title.toString().trim(),
+    description: desc.toString().trim(),
+    price: price.toString().trim(),
+    quantity: qty.toString().trim(),
+    tags: tags.toString().trim(),
+    material: material.toString().trim(),
+    images: images // array (may be empty)
+  };
+}
+
+function renderCatalog() {
+  catalogEl.innerHTML = '';
+  if (!PRODUCTS.length) {
+    noitemsEl.style.display = 'block';
+    return;
+  }
+  noitemsEl.style.display = 'none';
+  PRODUCTS.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    const img = document.createElement('img');
+    img.alt = p.title || '';
+    img.src = p.images && p.images.length ? p.images[0] : PLACEHOLDER_IMG;
+    thumb.appendChild(img);
+    const meta = document.createElement('div'); meta.className = 'meta';
+    meta.innerHTML = `<div class="title">${escapeHtml(p.title)}</div>
+                      <div class="price">${escapeHtml(p.price)}</div>
+                      <div style="font-size:13px;color:#666;margin-top:6px">${escapeHtml(p.tags)}</div>`;
+    card.appendChild(thumb);
+    card.appendChild(meta);
+    card.addEventListener('click', () => openModal(idx));
+    catalogEl.appendChild(card);
+  });
+}
+
+// Modal logic
+const modal = document.getElementById('modal');
+const modalImage = document.getElementById('modalImage');
+const modalTitle = document.getElementById('modalTitle');
+const modalPrice = document.getElementById('modalPrice');
+const modalQuantity = document.getElementById('modalQuantity');
+const modalTags = document.getElementById('modalTags');
+const modalMaterial = document.getElementById('modalMaterial');
+const modalDesc = document.getElementById('modalDesc');
+const closeModalBtn = document.getElementById('closeModal');
+
+let currentImages = [];
+let currentIndex = 0;
+
+function openModal(index) {
+  const p = PRODUCTS[index];
+  currentImages = p.images && p.images.length ? p.images.slice() : [];
+  currentIndex = 0;
+  modalTitle.textContent = p.title || '';
+  modalPrice.textContent = p.price ? ('Price: ' + p.price) : '';
+  modalQuantity.textContent = p.quantity ? ('Quantity: ' + p.quantity) : '';
+  modalTags.textContent = p.tags ? ('Tags: ' + p.tags) : '';
+  modalMaterial.textContent = p.material ? ('Material: ' + p.material) : '';
+  modalDesc.textContent = p.description || '';
+  modalImage.src = currentImages.length ? currentImages[0] : PLACEHOLDER_IMG;
+  modal.setAttribute('aria-hidden','false');
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
+// click image to go to next image
+modalImage.addEventListener('click', () => {
+  if (!currentImages.length) return;
+  currentIndex = (currentIndex + 1) % currentImages.length;
+  modalImage.src = currentImages[currentIndex];
+});
+
+// close handlers
+closeModalBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) closeModal();
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowRight') { if (currentImages.length) { currentIndex = (currentIndex + 1) % currentImages.length; modalImage.src = currentImages[currentIndex]; } }
+  if (e.key === 'ArrowLeft') { if (currentImages.length) { currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length; modalImage.src = currentImages[currentIndex]; } }
+});
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"'`=\/]/g, function (s) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[s];
+  });
+}
+
+// load CSV
+function loadCSV() {
+  Papa.parse(CSV_PATH, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const data = results.data || [];
+      PRODUCTS = data.map(normalizeRow).filter(p => p.title && (p.images.length || true)); // keep even if images empty
+      renderCatalog();
+    },
+    error: function(err) {
+      console.error('CSV load error', err);
+      noitemsEl.textContent = 'Failed to load listings.csv — check file exists and is UTF-8 encoded.';
+      noitemsEl.style.display = 'block';
+    }
+  });
+}
+
+// initial
+loadCSV();
 </script>
-
 </body>
 </html>
