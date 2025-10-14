@@ -2,24 +2,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Real Unique Gem Stones Catalog</title>
 <style>
-body{font-family:sans-serif;background:#fafafa;margin:0;padding:0;}
-h1{text-align:center;margin:20px 0;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;padding:20px;}
-.card{background:#fff;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);
-      overflow:hidden;cursor:pointer;transition:transform .2s;}
-.card:hover{transform:scale(1.03);}
-.card img{width:100%;height:220px;object-fit:cover;}
-.info{padding:10px;text-align:center;}
-.title{font-weight:bold;margin-bottom:5px;}
-.price{color:#444;}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  color: #333;
+}
+.catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+.product {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.product:hover {
+  transform: scale(1.03);
+}
+.product img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+.info {
+  padding: 10px;
+  text-align: center;
+}
+.info h3 {
+  margin: 8px 0 5px;
+  font-size: 1.1em;
+}
+.info p {
+  color: #444;
+  font-weight: bold;
+}
+
+/* Popup modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 800px;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.modal img {
+  width: 100%;
+  max-width: 350px;
+  border-radius: 10px;
+}
+.close {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close:hover {
+  color: #000;
+}
+.details {
+  flex: 1;
+  min-width: 200px;
+}
+.details h2 {
+  margin-top: 0;
+}
 </style>
 </head>
 <body>
-<h1>Real Unique Gem Stones Catalog</h1>
-<div class="grid" id="catalog"></div>
 
-<script src="generator.js"></script>
+<h1>Real Unique Gem Stones Catalog</h1>
+<div class="catalog" id="catalog"></div>
+
+<!-- Modal -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div class="left">
+      <img id="modalImg" src="" alt="">
+    </div>
+    <div class="details">
+      <h2 id="modalTitle"></h2>
+      <p><strong>Price:</strong> $<span id="modalPrice"></span></p>
+      <p><strong>Quantity:</strong> <span id="modalQty"></span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Sample data (replace later with CSV import)
+const products = [
+  {
+    TITLE: "Natural Ruby Stone",
+    PRICE: "320.00",
+    QUANTITY: "1",
+    IMAGE1: "https://i.etsystatic.com/33601264/r/il/28bffc/4572898564/il_794xN.4572898564_9w9a.jpg"
+  },
+  {
+    TITLE: "Blue Sapphire Ring",
+    PRICE: "410.50",
+    QUANTITY: "2",
+    IMAGE1: "https://i.etsystatic.com/33601264/r/il/25e7a8/4635955865/il_794xN.4635955865_fgp4.jpg"
+  },
+  {
+    TITLE: "Emerald Pendant",
+    PRICE: "260.75",
+    QUANTITY: "5",
+    IMAGE1: "https://i.etsystatic.com/33601264/r/il/6af198/4721884392/il_794xN.4721884392_g2jf.jpg"
+  },
+  {
+    TITLE: "Natural Garnet Necklace",
+    PRICE: "540.00",
+    QUANTITY: "1",
+    IMAGE1: "https://i.etsystatic.com/33601264/r/il/0d33f7/4763898750/il_794xN.4763898750_kf4r.jpg"
+  }
+];
+
+// Build Catalog
+const catalog = document.getElementById("catalog");
+products.forEach(p => {
+  const div = document.createElement("div");
+  div.className = "product";
+  div.innerHTML = `
+    <img src="${p.IMAGE1}" alt="${p.TITLE}">
+    <div class="info">
+      <h3>${p.TITLE}</h3>
+      <p>$${p.PRICE}</p>
+    </div>
+  `;
+  div.onclick = () => openModal(p);
+  catalog.appendChild(div);
+});
+
+// Modal functionality
+const modal = document.getElementById("myModal");
+const modalImg = document.getElementById("modalImg");
+const modalTitle = document.getElementById("modalTitle");
+const modalPrice = document.getElementById("modalPrice");
+const modalQty = document.getElementById("modalQty");
+const closeBtn = document.getElementsByClassName("close")[0];
+
+function openModal(product) {
+  modal.style.display = "block";
+  modalImg.src = product.IMAGE1;
+  modalTitle.textContent = product.TITLE;
+  modalPrice.textContent = product.PRICE;
+  modalQty.textContent = product.QUANTITY;
+}
+closeBtn.onclick = () => (modal.style.display = "none");
+window.onclick = e => { if (e.target == modal) modal.style.display = "none"; };
+</script>
+
 </body>
 </html>
