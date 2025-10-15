@@ -3,140 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RUGS | Luxury Jewelry</title>
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            gold: '#d4af37',
-            warmbrown: '#3e2f24',
-            ivory: '#f9f6f1',
-          },
-          fontFamily: {
-            serif: ['"Cormorant Garamond"', 'serif'],
-            sans: ['"Poppins"', 'sans-serif'],
-          },
-        },
-      },
-    };
-  </script>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
-  <!-- AOS Animation Library -->
-  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-
+  <title>REALUNIQUEGEMSTONES</title>
   <style>
-    html { scroll-behavior: smooth; }
-    body { overflow-x: hidden; }
-
-    /* Golden hover glow */
-    .gold-glow:hover {
-      box-shadow: 0 0 25px rgba(212, 175, 55, 0.7);
-      transform: translateY(-5px);
+    /* Reset & fonts */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Playfair Display", serif;
+      color: #fff;
+      overflow-x: hidden;
+      background-color: #000;
     }
 
-    /* Parallax effect */
-    .parallax {
+    /* Hero Section */
+    .hero {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      background: url('https://png.pngtree.com/background/20210709/original/pngtree-beautiful-romantic-golden-jewelry-banner-background-picture-image_928147.jpg') 
+        center center / cover no-repeat;
       background-attachment: fixed;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: cover;
     }
 
-    /* For mobile (where background-attachment: fixed doesn’t work well) */
+    /* Golden overlay for richness */
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: brightness(0.9);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      color: #f7e7ce;
+      max-width: 90%;
+      animation: fadeIn 2s ease;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #f5d77d;
+      text-shadow: 0 0 20px rgba(255,215,0,0.3);
+      animation: slideDown 1.6s ease;
+    }
+
+    .hero p {
+      font-size: 1.4rem;
+      margin-top: 15px;
+      color: #fff8e1;
+      letter-spacing: 1px;
+      animation: fadeIn 2.4s ease;
+    }
+
+    .hero button {
+      margin-top: 40px;
+      padding: 14px 40px;
+      background: linear-gradient(90deg, #d4af37, #b8860b);
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.4s ease;
+      box-shadow: 0 0 20px rgba(255,215,0,0.4);
+    }
+
+    .hero button:hover {
+      background: linear-gradient(90deg, #f1c40f, #f39c12);
+      box-shadow: 0 0 40px rgba(255,215,0,0.8);
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile */
     @media (max-width: 768px) {
-      .parallax {
-        background-attachment: scroll;
-      }
+      .hero h1 { font-size: 2.4rem; }
+      .hero p { font-size: 1.1rem; }
+      .hero button { padding: 12px 30px; }
     }
   </style>
 </head>
-<body class="bg-ivory text-warmbrown font-serif">
+<body>
 
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-warmbrown to-gold text-ivory shadow-md fixed top-0 left-0 right-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-3xl font-serif tracking-wide">RUGS</h1>
-      <nav class="space-x-8 text-lg font-light">
-        <a href="#home" class="hover:text-gold transition">Home</a>
-        <a href="#collection" class="hover:text-gold transition">Collections</a>
-        <a href="#about" class="hover:text-gold transition">About</a>
-        <a href="#contact" class="hover:text-gold transition">Contact</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Hero Section with Parallax -->
-  <section id="home" class="relative h-[100vh] flex items-center justify-center parallax" style="background-image: url('https://images.unsplash.com/photo-1600180758890-6dcb09cf6c98?auto=format&fit=crop&w=2000&q=80');">
-    <div class="absolute inset-0 bg-black/40"></div>
-    <div class="relative z-10 text-center text-ivory px-4" data-aos="fade-up" data-aos-duration="1200">
-      <h2 class="text-5xl md:text-7xl font-serif mb-4">Where Art Meets Elegance</h2>
-      <p class="text-lg md:text-2xl mb-8 font-light">Handcrafted jewelry inspired by nature and soul.</p>
-      <a href="#collection" class="bg-gold text-warmbrown px-8 py-3 rounded-full text-lg font-medium hover:bg-ivory transition">Explore Collection</a>
+  <section class="hero">
+    <div class="hero-content">
+      <h1>REALUNIQUEGEMSTONES</h1>
+      <p>Where Art Meets Elegance</p>
+      <p>Handcrafted jewelry inspired by nature and soul.</p>
+      <button>Explore Collection</button>
     </div>
   </section>
 
-  <!-- Featured Collection -->
-  <section id="collection" class="max-w-7xl mx-auto py-28 px-6 text-center">
-    <h3 class="text-4xl font-serif mb-10" data-aos="fade-down" data-aos-duration="1000">Featured Pieces</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-      <!-- Product Card 1 -->
-      <div class="group relative overflow-hidden rounded-xl border border-gold gold-glow transition" data-aos="fade-up" data-aos-delay="200">
-        <img src="https://images.unsplash.com/photo-1611599539397-6d379282f832?auto=format&fit=crop&w=800&q=80" alt="Gold Necklace" class="w-full h-96 object-cover group-hover:scale-105 transition duration-500" />
-        <div class="absolute inset-0 bg-gradient-to-t from-warmbrown/70 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-        <div class="absolute bottom-4 left-4 text-ivory">
-          <h4 class="text-xl font-medium">Aurora Necklace</h4>
-          <p class="text-gold">$680</p>
-        </div>
-      </div>
-
-      <!-- Product Card 2 -->
-      <div class="group relative overflow-hidden rounded-xl border border-gold gold-glow transition" data-aos="fade-up" data-aos-delay="400">
-        <img src="https://images.unsplash.com/photo-1611599539208-8c5efbca2f26?auto=format&fit=crop&w=800&q=80" alt="Gold Ring" class="w-full h-96 object-cover group-hover:scale-105 transition duration-500" />
-        <div class="absolute inset-0 bg-gradient-to-t from-warmbrown/70 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-        <div class="absolute bottom-4 left-4 text-ivory">
-          <h4 class="text-xl font-medium">Luna Ring</h4>
-          <p class="text-gold">$340</p>
-        </div>
-      </div>
-
-      <!-- Product Card 3 -->
-      <div class="group relative overflow-hidden rounded-xl border border-gold gold-glow transition" data-aos="fade-up" data-aos-delay="600">
-        <img src="https://images.unsplash.com/photo-1617038260897-6a7cd04c29b3?auto=format&fit=crop&w=800&q=80" alt="Gold Earrings" class="w-full h-96 object-cover group-hover:scale-105 transition duration-500" />
-        <div class="absolute inset-0 bg-gradient-to-t from-warmbrown/70 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
-        <div class="absolute bottom-4 left-4 text-ivory">
-          <h4 class="text-xl font-medium">Celeste Earrings</h4>
-          <p class="text-gold">$420</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Quote Section -->
-  <section id="about" class="bg-warmbrown text-ivory py-24 text-center px-6">
-    <blockquote class="text-3xl md:text-4xl italic font-light max-w-4xl mx-auto" data-aos="zoom-in" data-aos-duration="1200">
-      “Luxury lies not in the price, but in the artistry and story each piece carries.”
-    </blockquote>
-  </section>
-
-  <!-- Footer -->
-  <footer id="contact" class="bg-gradient-to-r from-warmbrown to-gold text-ivory py-8 text-center text-sm">
-    © 2025 RUGS Jewelry — Handcrafted with Passion
-  </footer>
-
-  <!-- Initialize AOS -->
-  <script>
-    AOS.init({
-      duration: 1200,
-      once: true,
-    });
-  </script>
 </body>
 </html>
