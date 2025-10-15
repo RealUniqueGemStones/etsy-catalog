@@ -1,153 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>RealUniqueGemStones Catalog</title>
-
-<!-- PapaParse -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-<style>
-  /* ---------- Global ---------- */
-  :root{
-    --bg1:#f8ecd6; --bg2:#f3d9aa; --bg3:#e7c48c; --accent:#c08460;
-    --deep:#5f1e16; --soft:#fdf8f2; --gold:#d4af37;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
-  body{
-    background: linear-gradient(180deg,var(--bg1),var(--bg2),var(--bg3),#f9ecd1);
-    color:#4a3c2a;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    min-height:100vh;
-  }
-
-  /* ---------- Header (animated gradient) ---------- */
-  header{
-    position:relative;
-    z-index:3;
-    padding:22px 16px;
-    text-align:center;
-    color:var(--soft);
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    font-size:22px;
-    border-bottom:2px solid rgba(212,175,55,0.08);
-    overflow:hidden;
-  }
-
-  /* animated gradient */
-  header .grad {
-    position:absolute; inset:0; z-index:-1;
-    background: linear-gradient(90deg,#4b2e1e,#b68d60,#f0d88b,#9c6e42);
-    background-size:300% 100%;
-    animation: headerFlow 8s linear infinite;
-    opacity:0.98;
-  }
-  @keyframes headerFlow{
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:0% 50%}
-  }
-  /* thin gold border */
-  header::after{
-    content:"";
-    position:absolute;inset:0;padding:3px;pointer-events:none;
-    background:linear-gradient(90deg,#f6e7b3,#e0b565,#f0d88b);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    z-index:4;
-    opacity:0.85;
-  }
-
-  /* ---------- Controls / File picker ---------- */
-  .controls{
-    max-width:1200px;margin:18px auto;padding:0 20px;display:flex;gap:12px;align-items:center;justify-content:flex-end;
-  }
-  .controls label{font-size:14px;color:#5a463e}
-  .file-input{display:inline-block}
-
-  /* ---------- Grid ---------- */
-  .wrap{max-width:1400px;margin:8px auto 80px;padding:0 20px}
-  .container{
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap:24px;
-    justify-items:center;
-    align-items:start;
-  }
-
-  /* responsive */
-  @media(max-width:1200px){ .container{grid-template-columns:repeat(4,1fr)}}
-  @media(max-width:900px){ .container{grid-template-columns:repeat(3,1fr)}}
-  @media(max-width:600px){ .container{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:420px){ .container{grid-template-columns:1fr} }
-
-  /* ---------- Card ---------- */
-  .card{
-    position:relative;
-    width:100%;
-    max-width:260px;
-    background:#fffdf7;
-    border-radius:14px;
-    overflow:hidden;
-    border:2px solid rgba(255,215,160,0.6);
-    box-shadow: 0 6px 16px rgba(90,70,62,0.12);
-    transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
-  }
-  .card:hover{ transform:translateY(-8px) scale(1.02); border-color: #f6c56b; box-shadow:0 0 36px rgba(255,220,150,0.75); z-index:20 }
-
-  /* bulb glow (behind card) */
-  .card::before{
-    content:"";
-    position:absolute;
-    inset: -60% -60% auto -60%;
-    height:300%;
-    width:220%;
-    background: radial-gradient(circle at 50% 50%, rgba(255,220,150,0.30), transparent 45%);
-    opacity:0;
-    transform:scale(.9);
-    transition:opacity .45s ease, transform .45s ease;
-    pointer-events:none;
-    z-index:0;
-    filter: blur(24px);
-  }
-  .card:hover::before{ opacity:1; transform:scale(1.05); animation:bulbPulse 2.2s ease-in-out infinite alternate; }
-
-  @keyframes bulbPulse{
-    from{ opacity:0.6; transform:scale(1); }
-    to{ opacity:1; transform:scale(1.08); }
-  }
-
-  /* small ambient halo */
-  .card::after{
-    content:"";
-    position:absolute;
-    inset:auto -10% -10% -10%;
-    background: radial-gradient(circle, rgba(255,220,150,0.10), transparent 55%);
-    opacity:0;
-    transition:opacity .35s ease;
-    filter: blur(40px);
-    z-index:0;
-  }
-  .card:hover::after{ opacity:1 }
-
-  .image-gallery{ position:relative; width:100%; height:240px; overflow:hidden; z-index:2; background:#e8d6b8 }
-  .image-gallery img{ width:100%; height:240px; object-fit:cover; display:none; transition:opacity .5s ease;}
-  .image-gallery img:first-child{ display:block; }
-
-  .info{ padding:14px 16px; text-align:center; z-index:3; position:relative; background:linear-gradient(to top,#fffdf8,#fffdf8) }
-  .title{ color:var(--deep); font-weight:600; font-size:16px; margin-bottom:8px }
-  .price{ color:var(--accent); font-weight:700; font-size:15px }
-
-  /* small loader/error */
-  .msg { max-width:1200px;margin:18px auto;color:#5a463e;padding:0 20px;font-size:14px }
-  .error{ color:#8b2d2d }
-</style>
-</head>
 <body>
 
 <header>
@@ -155,144 +5,84 @@
   RealUniqueGemStones Catalog
 </header>
 
-<div class="controls">
-  <div class="msg" id="status">Loading CSV…</div>
-  <div style="flex:1"></div>
-  <label style="display:flex;align-items:center;gap:8px">
-    <span style="font-size:13px;color:#5a463e">If nothing loads, choose CSV:</span>
-    <input id="csvFile" class="file-input" type="file" accept=".csv" />
-  </label>
-</div>
+<!-- Hidden file input kept for manual CSV load, but not shown visually -->
+<input id="csvFile" type="file" accept=".csv" style="display:none" />
 
 <div class="wrap">
   <div id="catalog" class="container" aria-live="polite"></div>
 </div>
 
 <script>
-/*
-  Robust loader:
-  1) Try to fetch 'listings.csv' (works on GitHub Pages / local server)
-  2) If fetch fails (CORS / file://), show file picker and parse chosen file using PapaParse
-*/
-
-const statusEl = document.getElementById('status');
 const catalogEl = document.getElementById('catalog');
 const fileInput = document.getElementById('csvFile');
 
-function showStatus(msg, isError=false){
-  statusEl.textContent = msg;
-  statusEl.className = isError ? 'msg error' : 'msg';
-}
-
 async function tryFetchCSV(){
   try{
-    showStatus('Trying to fetch listings.csv (server mode)…');
     const r = await fetch('listings.csv', {cache:'no-store'});
-    if(!r.ok) throw new Error('Fetch failed: ' + r.status);
+    if(!r.ok) throw new Error('Fetch failed');
     const text = await r.text();
     parseCSVText(text);
-    return true;
-  }catch(err){
-    console.warn('Fetch CSV failed:', err);
-    showStatus('Could not fetch listings.csv automatically. Use the "choose CSV" control or run a local server. (See console for details).', true);
-    return false;
+  }catch{
+    console.warn('Auto fetch failed. You can still use hidden file input.');
   }
 }
 
 function parseCSVText(text){
-  // Use PapaParse to handle quotes/commas properly
   const parsed = Papa.parse(text.trim(), {header:true, skipEmptyLines:true});
-  if(parsed.errors && parsed.errors.length){
-    console.warn('PapaParse errors:', parsed.errors);
-  }
-  const data = parsed.data || [];
-  if(!data.length){
-    showStatus('CSV parsed but no rows found. Check file format.', true);
-    return;
-  }
-  showStatus(`Loaded ${data.length} products — rendering...`);
-  renderCatalog(data);
+  renderCatalog(parsed.data || []);
 }
 
 function renderCatalog(data){
   catalogEl.innerHTML = '';
   data.forEach(item => {
-    const title = item.TITLE || item.Title || item.title || '';
-    const price = item.PRICE || item.Price || item.price || '';
-    if(!title) return; // skip
-    // gather images for IMAGE1..IMAGE10 OR any header containing 'image'
+    const title = item.TITLE || '';
+    const price = item.PRICE || '';
+    if(!title) return;
     const images = [];
     for(let i=1;i<=10;i++){
-      const key = 'IMAGE'+i;
+      const key='IMAGE'+i;
       if(item[key] && item[key].trim()) images.push(item[key].trim());
     }
-    // also catch other image-like headers
-    for(const k in item){
-      if(!k) continue;
-      if(k.toLowerCase().includes('image') && !images.includes(item[k].trim())){
-        const v = (item[k]||'').trim();
-        if(v) images.push(v);
+
+    const card=document.createElement('div');
+    card.className='card';
+    const gallery=document.createElement('div');
+    gallery.className='image-gallery';
+
+    if(images.length){
+      images.forEach((src,i)=>{
+        const img=document.createElement('img');
+        img.src=src; if(i===0) img.style.display='block';
+        gallery.appendChild(img);
+      });
+      if(images.length>1){
+        let cur=0;
+        setInterval(()=>{
+          const imgs=gallery.querySelectorAll('img');
+          imgs.forEach((im,i)=>im.style.display=i===cur?'block':'none');
+          cur=(cur+1)%imgs.length;
+        },2500);
       }
     }
 
-    const card = document.createElement('div'); card.className='card';
-    const gallery = document.createElement('div'); gallery.className='image-gallery';
-    // create image elements (if none, placeholder)
-    if(images.length){
-      images.forEach((src, idx) => {
-        const img = document.createElement('img');
-        img.src = src;
-        if(idx===0) img.style.display='block';
-        gallery.appendChild(img);
-      });
-    } else {
-      // placeholder SVG
-      const svg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23e6d2b5"/><text x="50%" y="50%" font-size="22" text-anchor="middle" fill="%23999" dy=".3em">No Image</text></svg>';
-      const img = document.createElement('img'); img.src = svg; img.style.display='block';
-      gallery.appendChild(img);
-    }
-
-    // auto rotate images if >1
-    if(gallery.children.length > 1){
-      let cur = 0;
-      setInterval(()=> {
-        const imgs = gallery.querySelectorAll('img');
-        imgs.forEach((im,i)=> im.style.display = (i===cur) ? 'block' : 'none');
-        cur = (cur + 1) % imgs.length;
-      }, 2500);
-    }
-
-    const info = document.createElement('div'); info.className='info';
-    info.innerHTML = `<div class="title">${escapeHtml(title)}</div>
-                      <div class="price">${(item.CURRENCY||'').trim() || '$'}${escapeHtml(price)}</div>`;
+    const info=document.createElement('div');
+    info.className='info';
+    info.innerHTML=`<div class="title">${title}</div>
+                    <div class="price">${(item.CURRENCY||'$')}${price}</div>`;
 
     card.appendChild(gallery);
     card.appendChild(info);
     catalogEl.appendChild(card);
   });
-
-  showStatus('Rendered catalog — hover cards to see golden glow.');
 }
 
-// File input fallback
-fileInput.addEventListener('change', (e)=>{
-  const f = e.target.files && e.target.files[0];
+// fallback manual upload listener (kept functional but hidden)
+fileInput.addEventListener('change', e=>{
+  const f=e.target.files[0];
   if(!f) return;
-  showStatus('Parsing selected CSV file...');
-  Papa.parse(f, {
-    header:true, skipEmptyLines:true,
-    complete: function(res){
-      parseCSVText(Papa.unparse(res.data)); // re-serialize to text then parse (keeps behavior consistent)
-    },
-    error: function(err){ showStatus('CSV parse error: '+err.message, true); console.error(err); }
-  });
+  Papa.parse(f, {header:true, skipEmptyLines:true, complete:r=>renderCatalog(r.data)});
 });
 
-// utility
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"'`=\/]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c]; }); }
-
-// try automatic fetch first
 tryFetchCSV();
 </script>
 </body>
-</html>
